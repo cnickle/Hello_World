@@ -23,6 +23,25 @@ def linear(x,m,b):
 def fermi(E,T):
     return 1/(np.exp((E)/(kb*T))+1)
 
+def gaussian(x,A, mu,sigma):
+    return A*np.exp(-.5*((x-mu)/(sigma))**2)
+
+def normalized_gaussian(x, mu,sigma):
+    A = 1
+    def gaus(ep):
+        return gaussian(ep,A,mu,sigma)
+    
+    A = 1/quad(gaus,-10,10)[0]    
+    return gaussian(x, A, mu, sigma)
+
+def densityOfStates(E,ep,gamma):
+    numerator = gamma
+    denominator = (E-ep)**2+(gamma/2)**2
+    return numerator/denominator#/(2*np.pi)
+
+def rateRatio(gammaL,gammaR):
+    return gammaL*gammaR/(gammaL+gammaR)
+
 def tunnelmodel_2level_gated(vb, gammaL, gammaR, deltaE1, deltaE2, Vg, T, eta, c):
     gamma = gammaL+gammaR
     
@@ -39,27 +58,27 @@ def tunnelmodel_1level_nogate_300K(vb, gammaL, gammaR, deltaE1, eta):
     gamma = gammaL+gammaR
     
     def integrand(E):
-        left = (gammaL*gammaR)/((E-(deltaE1+(eta-1/2)*vb))**2+gamma**2/4)
-        
-        return -(left)*(fermi(E+vb/2,T)-fermi(E-vb/2,T))
+        return -densityOfStates(E,(deltaE1+(eta-1/2)*vb),gamma)*\
+        rateRatio(gammaL,gammaR)*\
+        (fermi(E+vb/2,T)-fermi(E-vb/2,T))
     
-    return q/h*quad(integrand,-10,10)[0]
-
-def gaussian(x,A, mu,sigma):
-    return A*np.exp(-.5*((x-mu)/(sigma))**2)
-    
+    return q/h*quad(integrand,-10,10)[0]    
 
 def tunnelmodel_1level_nogate_300K_gauss(vb, gammaL, gammaR, deltaE1, eta, sigma):
     T  = 300*K
-    A  = 1
     gamma = gammaL+gammaR
     
+    def outer(E):
+        return -densityOfStates(E,(deltaE1+(eta-1/2)*vb),gamma)*\
+        rateRatio(gammaL,gammaR)*\
+        (fermi(E+vb/2,T)-fermi(E-vb/2,T))
+    
     def gaus(ep):
-        return gaussian(ep,A,deltaE1,sigma)
-    def integrand(E):
-        g = quad(gaus,-10,10)[0]
-        
-        left = (gammaL*gammaR)/((E-(deltaE1+(eta-1/2)*vb))**2+gamma**2/4)
+        return normalized_gaussian(ep,deltaE1,sigma)
+
+    def outer_integrand(E):
+        def inner_integrand(ep):
+            tunnelModel = (gammaL*gammaR)/((E-(ep+(eta-1/2)*vb))**2+gamma**2/4)
         
         return -left*(fermi(E+vb/2,T)-fermi(E-vb/2,T))*g
     return q/h*quad(integrand,-10,10)[0]
