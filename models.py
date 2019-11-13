@@ -13,9 +13,9 @@ C  = 1 #Coulombs
 s  = 1 #seconds
 V  = 1 #volts
 
-kb=8.6173324e-5*eV/K #Boltzmann Constant
-q = 1.6e-19*C
-h = 4.1356e-15*eV*s
+kb = 8.6173324e-5*eV/K #Boltzmann Constant
+q  = 1.6e-19*C
+h  = 4.1356e-15*eV*s
 
 def linear(x,m,b):
     return b+x*m
@@ -31,7 +31,7 @@ def normalized_gaussian(x, mu,sigma):
     def gaus(ep):
         return gaussian(ep,A,mu,sigma)
     
-    A = 1/quad(gaus,-10,10)[0]    
+    A = 1/quad(gaus,mu-3*sigma,mu+3*sigma)[0]    
     return gaussian(x, A, mu, sigma)
 
 def densityOfStates(E,ep,gamma):
@@ -41,6 +41,36 @@ def densityOfStates(E,ep,gamma):
 
 def rateRatio(gammaL,gammaR):
     return gammaL*gammaR/(gammaL+gammaR)
+
+def single_level_tunnel_model_integrand(E,ep,c,vg,eta,vb,gammaL,gammaR,T):
+    gamma = gammaL+gammaR
+    return -densityOfStates(E,((ep+c*vg)+(eta-1/2)*vb),gamma)*\
+        rateRatio(gammaL,gammaR)*\
+        (fermi(E+vb/2,T)-fermi(E-vb/2,T))
+
+def tunnelmodel_1level_nogate_300K(vb, gammaL, gammaR, deltaE1, eta):
+    c  = 0*V
+    vg = 0*V
+    T  = 300*K
+    args = (deltaE1,c,vg,eta,vb,gammaL,gammaR,T)
+    
+    return q/h*quad(single_level_tunnel_model_integrand,-10,10,args = args)[0]    
+
+def tunnelmodel_1level_nogate_300K_gauss(vb, gammaL, gammaR, deltaE1, eta, sigma):
+    c  = 0*V
+    vg = 0*V
+    T = 300*K
+    A = 1
+    args = (A,deltaE1,sigma)
+    A = 1/quad(gaussian,deltaE1-3*sigma,deltaE1+3*sigma,args=args)[0]
+    
+    def outer(E):
+        def inner(ep):
+            result = gaussian(ep,A,deltaE1,sigma)*\
+            single_level_tunnel_model_integrand(E,ep,c,vg,eta,vb,gammaL,gammaR,T)
+            return result
+        return quad(inner,deltaE1-3*sigma,deltaE1+3*sigma)[0]
+    return q/h*quad(outer,-2.5,2.5)[0]
 
 def tunnelmodel_2level_gated(vb, gammaL, gammaR, deltaE1, deltaE2, Vg, T, eta, c):
     gamma = gammaL+gammaR
@@ -52,36 +82,6 @@ def tunnelmodel_2level_gated(vb, gammaL, gammaR, deltaE1, deltaE2, Vg, T, eta, c
         return -(left+right)*(fermi(E+vb/2,T)-fermi(E-vb/2,T))
     
     return q/h*quad(integrand,-5,5)[0]
-
-def tunnelmodel_1level_nogate_300K(vb, gammaL, gammaR, deltaE1, eta):
-    T  = 300*K
-    gamma = gammaL+gammaR
-    
-    def integrand(E):
-        return -densityOfStates(E,(deltaE1+(eta-1/2)*vb),gamma)*\
-        rateRatio(gammaL,gammaR)*\
-        (fermi(E+vb/2,T)-fermi(E-vb/2,T))
-    
-    return q/h*quad(integrand,-10,10)[0]    
-
-def tunnelmodel_1level_nogate_300K_gauss(vb, gammaL, gammaR, deltaE1, eta, sigma):
-    T  = 300*K
-    gamma = gammaL+gammaR
-    
-    def outer(E):
-        return -densityOfStates(E,(deltaE1+(eta-1/2)*vb),gamma)*\
-        rateRatio(gammaL,gammaR)*\
-        (fermi(E+vb/2,T)-fermi(E-vb/2,T))
-    
-    def gaus(ep):
-        return normalized_gaussian(ep,deltaE1,sigma)
-
-    def outer_integrand(E):
-        def inner_integrand(ep):
-            tunnelModel = (gammaL*gammaR)/((E-(ep+(eta-1/2)*vb))**2+gamma**2/4)
-        
-        return -left*(fermi(E+vb/2,T)-fermi(E-vb/2,T))*g
-    return q/h*quad(integrand,-10,10)[0]
 
 def nitzanmodel_fixedtemp_gatevoltage(Vg,E,l):
     T0=260
