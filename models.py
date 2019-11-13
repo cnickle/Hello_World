@@ -53,8 +53,10 @@ def tunnelmodel_1level_nogate_300K(vb, gammaL, gammaR, deltaE1, eta):
     vg = 0*V
     T  = 300*K
     args = (deltaE1,c,vg,eta,vb,gammaL,gammaR,T)
+    limits = [min([-.1,-1*np.abs(vb)]),\
+              max([.1,1*np.abs(vb)])]
     
-    return q/h*quad(single_level_tunnel_model_integrand,-10,10,args = args)[0]    
+    return q/h*quad(single_level_tunnel_model_integrand,limits[0],limits[1],args = args)[0]    
 
 def tunnelmodel_1level_nogate_300K_gauss(vb, gammaL, gammaR, deltaE1, eta, sigma):
     c  = 0*V
@@ -64,13 +66,17 @@ def tunnelmodel_1level_nogate_300K_gauss(vb, gammaL, gammaR, deltaE1, eta, sigma
     args = (A,deltaE1,sigma)
     A = 1/quad(gaussian,deltaE1-3*sigma,deltaE1+3*sigma,args=args)[0]
     
+    limits = [min([deltaE1-3*sigma,-1*np.abs(vb)]),\
+              max([deltaE1+3*sigma,1*np.abs(vb)])]
+    
     def outer(E):
         def inner(ep):
             result = gaussian(ep,A,deltaE1,sigma)*\
             single_level_tunnel_model_integrand(E,ep,c,vg,eta,vb,gammaL,gammaR,T)
             return result
-        return quad(inner,deltaE1-3*sigma,deltaE1+3*sigma)[0]
-    return q/h*quad(outer,-2.5,2.5)[0]
+        return quad(inner,limits[0],limits[1])[0]
+    return q/h*quad(outer,limits[0],limits[1])[0]
+    #return q/h*quad(outer,-1.5*np.abs(vb),1.5*np.abs(vb))[0]
 
 def tunnelmodel_2level_gated(vb, gammaL, gammaR, deltaE1, deltaE2, Vg, T, eta, c):
     gamma = gammaL+gammaR

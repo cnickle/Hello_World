@@ -21,32 +21,32 @@ def test_compare_with_mathematica():
     f = models.tunnelmodel_1level_nogate_300K(4,0.5,0.5,1.1,0.5)
     assert abs((f-0.0000476775)/f) <0.05
 
-#def test_2Hc2F():
-#    par = {
-#        'gammaL'  : 0.000268,
-#        'gammaR'  : 0.464514,
-#        'deltaE1' : 0.574295,
-#        'eta'     : 0.582212
-#        }
-#    
-#    fName = '2H-c-2F (amps).txt'
-#    data = sciData(fName,directory,models.tunnelmodel_1level_nogate_300K)
-#    data.fit(bnds,initpar)
-#    
-#    for key in list(par.keys()):
-#        assert abs((par[key]-data.parameters[key])/par[key]) < 0.05
-#
-#def test_2Hs2F():
-#    par = {
-#        'gammaL'  : 0.000042,
-#        'gammaR'  : 0.229306,
-#        'deltaE1' : 0.835175,
-#        'eta'     : 1.000000
-#        }
-#    
-#    fName = '2H-s-2F (amps).txt'
-#    data = sciData(fName,directory,models.tunnelmodel_1level_nogate_300K)
-#    data.fit(bnds,initpar)
-#    
-#    for key in list(par.keys()):
-#        assert abs((par[key]-data.parameters[key])/par[key]) < 0.05
+def test_2Hc2F():
+    par = {
+        'gammaL'  : 0.000268,
+        'gammaR'  : 0.464514,
+        'deltaE1' : 0.574295,
+        'eta'     : 0.582212
+        }
+    
+    fName = '2H-c-2F (amps).txt'
+    data = sciData(fName,directory,models.tunnelmodel_1level_nogate_300K)
+    data.fit(bnds,initpar)
+    
+    for key in list(par.keys()):
+        assert abs((par[key]-data.parameters[key])/par[key]) < 0.05
+
+def test_2Hs2F():
+    par = {
+        'gammaL'  : 0.000042,
+        'gammaR'  : 0.229306,
+        'deltaE1' : 0.835175,
+        'eta'     : 1.000000
+        }
+    
+    fName = '2H-s-2F (amps).txt'
+    data = sciData(fName,directory,models.tunnelmodel_1level_nogate_300K)
+    data.fit(bnds,initpar)
+    
+    for key in list(par.keys()):
+        assert abs((par[key]-data.parameters[key])/par[key]) < 0.05
