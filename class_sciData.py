@@ -19,6 +19,7 @@ class sciData:
     rawdat = {}
     parameters = {}
     errors = {}
+    modelDat = {}
 
 # %% Fitting functions
     def __fit(self,model,parBnds,parInitial):        
@@ -42,6 +43,9 @@ class sciData:
     def fit(self,parBnds, parInitial):
         self.fitbool = True
         results,covar  = self.__fit(self.model,parBnds,parInitial)
+        
+        self.modelDat['X']=self.workingdat['X']
+        self.modelDat['Y']=self.model(self.workingdat['X'], *results)
         
         cnt = 0
         for name in list(parBnds.keys()):
@@ -80,9 +84,16 @@ class sciData:
                                                self.errors[name])
         print(output)
         
-    def plot(self,saveAs = ''):
+    def plot(self,*args):
         plt.figure()
         plt.scatter(self.rawdat['X'],self.rawdat['Y'],s=10,color='black')
+        
+        #If par = I, plot the data with the initial parameters
+        if args[0] == 'I':
+            XThr = self.workingdat['X']
+            YThr = self.model(self.workingdat['X'],*args[1].values())
+            plt.plot(XThr,YThr)
+            print(np.sum(np.subtract(self.workingdat['Y'],YThr)**2))
         
         # If a fit has been done it will plot the model on top
         if self.fitbool:
@@ -92,10 +103,10 @@ class sciData:
         
         # If the user as specified a name for the plot, then the plot
         # will be saved.
-        if saveAs:
-            PlotN = '%s\\%s.png' %(self.directory,saveAs)
-            plt.savefig(PlotN)
-            plt.close()
+#        if saveAs:
+#            PlotN = '%s\\%s.png' %(self.directory,saveAs)
+#            plt.savefig(PlotN)
+#            plt.close()
 
 # %%Utility Functions           
     def __init__(self,fName, directory,equation, rawdat = {}):

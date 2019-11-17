@@ -6,6 +6,8 @@ Functions to be used in fitting and calculations
 """
 import numpy as np
 from scipy.integrate import quad
+from scipy.integrate import dblquad
+from numba import jit
 
 eV = 1 #Energy
 K  = 1 #Temperature Units
@@ -17,15 +19,19 @@ kb = 8.6173324e-5*eV/K #Boltzmann Constant
 q  = 1.6e-19*C
 h  = 4.1356e-15*eV*s
 
+@jit
 def linear(x,m,b):
     return b+x*m
-  
+
+@jit  
 def fermi(E,T):
     return 1/(np.exp((E)/(kb*T))+1)
 
+@jit
 def gaussian(x,A, mu,sigma):
     return A*np.exp(-.5*((x-mu)/(sigma))**2)
 
+@jit
 def normalized_gaussian(x, mu,sigma):
     A = 1
     def gaus(ep):
@@ -34,14 +40,17 @@ def normalized_gaussian(x, mu,sigma):
     A = 1/quad(gaus,mu-3*sigma,mu+3*sigma)[0]    
     return gaussian(x, A, mu, sigma)
 
+@jit
 def densityOfStates(E,ep,gamma):
     numerator = gamma
     denominator = (E-ep)**2+(gamma/2)**2
     return numerator/denominator#/(2*np.pi)
 
+@jit
 def rateRatio(gammaL,gammaR):
     return gammaL*gammaR/(gammaL+gammaR)
 
+@jit
 def single_level_tunnel_model_integrand(E,ep,c,vg,eta,vb,gammaL,gammaR,T):
     gamma = gammaL+gammaR
     return -densityOfStates(E,((ep+c*vg)+(eta-1/2)*vb),gamma)*\
@@ -68,15 +77,18 @@ def tunnelmodel_1level_nogate_300K_gauss(vb, gammaL, gammaR, deltaE1, eta, sigma
     
     limits = [min([deltaE1-3*sigma,-1*np.abs(vb)]),\
               max([deltaE1+3*sigma,1*np.abs(vb)])]
+    #print(limits)
     
-    def outer(E):
-        def inner(ep):
-            result = gaussian(ep,A,deltaE1,sigma)*\
-            single_level_tunnel_model_integrand(E,ep,c,vg,eta,vb,gammaL,gammaR,T)
-            return result
-        return quad(inner,limits[0],limits[1])[0]
-    return q/h*quad(outer,limits[0],limits[1])[0]
-    #return q/h*quad(outer,-1.5*np.abs(vb),1.5*np.abs(vb))[0]
+    def integrand (E,ep):
+        result = gaussian(ep,A,deltaE1,sigma)*\
+        single_level_tunnel_model_integrand(E,ep,c,vg,eta,vb,gammaL,gammaR,T)
+        return result
+    
+    return q/h*dblquad(integrand,
+                       limits[0],
+                       limits[1],
+                       lambda x: limits[0],
+                       lambda x: limits[1])[0]
 
 def tunnelmodel_2level_gated(vb, gammaL, gammaR, deltaE1, deltaE2, Vg, T, eta, c):
     gamma = gammaL+gammaR

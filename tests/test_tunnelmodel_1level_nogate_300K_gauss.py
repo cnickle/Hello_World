@@ -21,8 +21,8 @@ bnds = {
         }
 
 def test_compare_with_mathematica1():
-    mathematica = [-2.85537E-8, -1.70412E-8, -8.84325E-9, -3.6813E-9, \
-                   3.23947E-9, 6.73937E-9, 1.11846E-8, 1.72905E-8]
+    mathematica = [-4.50152E-9, -3.6177E-9, -2.61204E-9,\
+                   -2.1881E-9,1.25685E-9, 4.62326E-9, 8.52859E-9, 1.42613E-8]
     vb = [-1, -.75, -.5, -.25,.25, .50, .75, 1]
     for i in range(len(vb)):
         f = models.tunnelmodel_1level_nogate_300K_gauss(vb[i],.000268, 0.464,\
