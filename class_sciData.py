@@ -87,7 +87,7 @@ class sciData:
     def plot(self,*args):
         plt.figure()
         plt.scatter(self.rawdat['X'],self.rawdat['Y'],s=10,color='black')
-        
+        plt.autoscale(False)
         #If par = I, plot the data with the initial parameters
         if args[0] == 'I':
             XThr = self.workingdat['X']
