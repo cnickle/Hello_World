@@ -65,14 +65,21 @@ class sciData:
         print(standarderror)
 
 # %% Output Data and Plots
-    def saveModel(self,fName):
-        LogFileN='%s\\%s.txt' % (self.directory,fName)
-        LogFile = open(LogFileN, 'w')
-        for index in range(len(self.workingdat)):
-            LogFile.write('%f\t%f\n' %(
-                    self.workingdat['X'][index],
-                    self.workingdat['Y'][index]))
-        LogFile.close()
+#    def saveModel(self,fName):
+#        LogFileN='%s\\%s.txt' % (self.directory,fName)
+#        LogFile = open(LogFileN, 'w')
+#        for index in range(len(self.workingdat)):
+#            LogFile.write('%f\t%f\n' %(
+#                    self.workingdat['X'][index],
+#                    self.workingdat['Y'][index]))
+#        LogFile.close()
+        
+    def calcRelativeError(self, initpar):
+        X = self.workingdat['X']
+        Y = self.workingdat['Y']
+        Ythr = self.model(X,*initpar.values())
+        SE = np.mean(np.abs(np.subtract(Y,Ythr)/(np.max(Y)-np.min(Y))))*100
+        return SE
     
     def printFit(self):
         output = "Fit Report:\n"

@@ -1,24 +1,8 @@
 from class_sciData import sciData
 import models
-import pytest
 import os
-import numpy as np
-directory = '%s\\tests'%os.getcwd()
-
-initpar = {
-        'gammaL'  : 0.5,
-        'gammaR'  : 0.5,
-        'deltaE1' : 1.1,
-        'eta'     : 0.5,
-        'W'       : 0.07
-        }
-
-bnds = {
-        'gammaL'  : [-10,10],
-        'gammaR'  : [-10,10],
-        'deltaE1' : [-10,10],
-        'eta'     : [0.0,1.]
-        }
+import time
+directory = '%s'%os.getcwd()
 
 def test_compare_with_mathematica1():
     mathematica = [-4.50152E-9, -3.6177E-9, -2.61204E-9,\
@@ -38,33 +22,39 @@ def test_compare_with_mathematica2():
         f = models.tunnelmodel_1level_nogate_300K_gauss(vb[i],.0005, 0.02,\
                                                         0.62, 0.7, 0.14)
         assert abs((f-mathematica[i])/f) < 0.05
-test_compare_with_mathematica1()
-#def test_2Hc2F():
-#    par = {
-#        'gammaL'  : 0.000268,
-#        'gammaR'  : 0.464514,
-#        'deltaE1' : 0.574295,
-#        'eta'     : 0.582212
-#        }
-#    
-#    fName = '2H-c-2F (amps).txt'
-#    data = sciData(fName,directory,models.tunnelmodel_1level_nogate_300K)
-#    data.fit(bnds,initpar)
-#    
-#    for key in list(par.keys()):
-#        assert abs((par[key]-data.parameters[key])/par[key]) < 0.05
-#
-#def test_2Hs2F():
-#    par = {
-#        'gammaL'  : 0.000042,
-#        'gammaR'  : 0.229306,
-#        'deltaE1' : 0.835175,
-#        'eta'     : 1.000000
-#        }
-#    
-#    fName = '2H-s-2F (amps).txt'
-#    data = sciData(fName,directory,models.tunnelmodel_1level_nogate_300K)
-#    data.fit(bnds,initpar)
-#    
-#    for key in list(par.keys()):
-#        assert abs((par[key]-data.parameters[key])/par[key]) < 0.05
+
+def test_2Hc2F():
+    start = time.time()
+    initpar = {
+        'gammaL'  : 0.032248,
+        'gammaR'  : 0.008489,
+        'deltaE1' : 0.874857,
+        'eta'     : 0.590363,
+        'width'   : 0.0087
+        }
+    
+    fName = 'tests\\2H-c-2F (amps).txt'
+    data = sciData(fName,directory,models.tunnelmodel_1level_nogate_300K_gauss)
+    SE=data.calcRelativeError(initpar)
+    runtime = time.time()-start
+    assert SE < 1 and runtime < 20
+    
+def test_2Hs2F():
+    start = time.time()
+    initpar = {
+        'gammaL'  : 0.000060,
+        'gammaR'  : 0.006331,
+        'deltaE1' : 0.708984,
+        'eta'     : 0.742364,
+        'width'   : 0.177987
+        }
+    
+    fName = 'tests\\2H-s-2F (amps).txt'
+    data = sciData(fName,directory,models.tunnelmodel_1level_nogate_300K_gauss)
+    SE=data.calcRelativeError(initpar)
+    runtime = time.time()-start
+    assert SE < 1 and runtime < 20
+
+if __name__ == "__main__":
+    test_2Hs2F()
+    test_2Hc2F()
