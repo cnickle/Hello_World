@@ -20,6 +20,10 @@ q  = 1.6e-19*C
 h  = 4.1356e-15*eV*s
 
 @jit
+def sigmoid(x,pos,width):
+    return 1/(1+np.exp((x-pos)/width))
+
+@jit
 def linear(x,m,b):
     return b+x*m
 
@@ -65,7 +69,8 @@ def tunnelmodel_1level_nogate_300K(vb, gammaL, gammaR, deltaE1, eta):
     limits = [min([-.1,-1*np.abs(vb)]),\
               max([.1,1*np.abs(vb)])]
     
-    return q/h*quad(single_level_tunnel_model_integrand,limits[0],limits[1],args = args)[0]    
+    return q/h*quad(single_level_tunnel_model_integrand,limits[0],limits[1],
+                    args = args)[0]    
 
 def tunnelmodel_1level_nogate_300K_gauss(vb, gammaL, gammaR, deltaE1, eta, sigma):
     c  = 0*V
@@ -77,7 +82,6 @@ def tunnelmodel_1level_nogate_300K_gauss(vb, gammaL, gammaR, deltaE1, eta, sigma
     
     limits = [min([deltaE1-3*sigma,-1*np.abs(vb)]),\
               max([deltaE1+3*sigma,1*np.abs(vb)])]
-    #print(limits)
     
     def integrand (E,ep):
         result = gaussian(ep,A,deltaE1,sigma)*\
@@ -88,7 +92,8 @@ def tunnelmodel_1level_nogate_300K_gauss(vb, gammaL, gammaR, deltaE1, eta, sigma
                        limits[0],
                        limits[1],
                        lambda x: limits[0],
-                       lambda x: limits[1])[0]
+                       lambda x: limits[1],
+                       epsabs=1E-12)[0]
 
 def tunnelmodel_2level_gated(vb, gammaL, gammaR, deltaE1, deltaE2, Vg, T, eta, c):
     gamma = gammaL+gammaR
@@ -100,6 +105,43 @@ def tunnelmodel_2level_gated(vb, gammaL, gammaR, deltaE1, deltaE2, Vg, T, eta, c
         return -(left+right)*(fermi(E+vb/2,T)-fermi(E-vb/2,T))
     
     return q/h*quad(integrand,-5,5)[0]
+
+def memoryMolecule(vb, pos, width,p0,
+                   gammaL_H, gammaR_H, deltaE_H, eta_H,
+                   gammaL_L, gammaR_L, deltaE_L, eta_L):
+    c  = 0*V
+    vg = 0*V
+    T  = 300*K
+    args_H = (deltaE_H,c,vg,eta_H,vb,gammaL_H,gammaR_H,T)
+    args_L = (deltaE_L,c,vg,eta_L,vb,gammaL_L,gammaR_L,T)
+    limits = [min([-.1,-1*np.abs(vb)]),\
+              max([.1,1*np.abs(vb)])]
+    
+    P_H = sigmoid(vb,pos,width)+p0
+    P_L = 1-P_H
+    
+    I_H = q/h*quad(single_level_tunnel_model_integrand,limits[0],limits[1],
+                    args = args_H)[0]
+    I_L = q/h*quad(single_level_tunnel_model_integrand,limits[0],limits[1],
+                    args = args_L)[0]
+    
+    return P_H*I_H+P_L*I_L
+
+def memoryMolecule_gauss(vb, pos, width,p0,m0,start,
+                   gammaL_H, gammaR_H, deltaE_H, eta_H,width_H,
+                   gammaL_L, gammaR_L, deltaE_L, eta_L,width_L):
+
+    args_H = (gammaL_H, gammaR_H, deltaE_H, eta_H,width_H)
+    args_L = (gammaL_L, gammaR_L, deltaE_L, eta_L,width_L)
+    
+    P_H = sigmoid(vb,pos,width)+linear(vb,-p0,p0)
+    P_L = 1-P_H
+    
+    I_H = tunnelmodel_1level_nogate_300K_gauss(vb,*args_H)
+    I_L = tunnelmodel_1level_nogate_300K_gauss(vb,*args_L)
+    
+    return P_H*I_H+P_L*I_L
+    
 
 def nitzanmodel_fixedtemp_gatevoltage(Vg,E,l):
     T0=260

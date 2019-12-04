@@ -20,7 +20,7 @@ class gen:
         self.ranges = ranges
         self.size = size
         for name in list(self.ranges.keys()):
-            self.parameters[name] = np.zeros(size)
+            self.parameters[name] = np.zeros(size)  
     
     def __normalize_weights(self,weights):
         if not weights:
@@ -31,7 +31,6 @@ class gen:
             return weights
     
     def nextgen(self, weights=[]):
-        print('Gen %d' %self.genID)
         self.genID +=1
         
         if not bool(self.population):
@@ -52,4 +51,5 @@ class gen:
                 for name in list(self.ranges.keys()):
                     self.population[index][name] = choice(
                             self.parameters[name],
-                            self.__normalize_weights(weights))             
+                            self.__normalize_weights(weights))
+        return self.population

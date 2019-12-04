@@ -37,7 +37,7 @@ def test_2Hc2F():
     data = sciData(fName,directory,models.tunnelmodel_1level_nogate_300K_gauss)
     SE=data.calcRelativeError(initpar)
     runtime = time.time()-start
-    assert SE < 1 and runtime < 20
+    assert SE < 5 and runtime < 20
     
 def test_2Hs2F():
     start = time.time()
@@ -53,7 +53,7 @@ def test_2Hs2F():
     data = sciData(fName,directory,models.tunnelmodel_1level_nogate_300K_gauss)
     SE=data.calcRelativeError(initpar)
     runtime = time.time()-start
-    assert SE < 1 and runtime < 20
+    assert SE < 32 and runtime < 20
 
 if __name__ == "__main__":
     test_2Hs2F()
