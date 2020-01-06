@@ -93,12 +93,12 @@ class sciData:
             pars[par]=i
             Err = self.calcRelativeError(pars)
             for name in pars.keys():
-                output = output + '%f\t'%pars[name]
+                output = output + '%e\t'%pars[name]
             output = output + '%.3f\n'%Err
             f= open('Test.txt',"a")
             f.write(output)
             f.close()
-            print('%.6f\t%.3f'%(i,Err))
+            print('%.3e\t%.3f'%(i,Err))
             
     def returnThry(self, xvals, initpar=[]):
         if not initpar:
@@ -118,7 +118,7 @@ class sciData:
     
     def printFit(self,*args):
         Err = self.calcRelativeError(self.parameters)
-        output = "Fit Report:\tError:\t%.5f\n" % Err
+        output = "Fit Report:\tError:\t%.2f\n" % Err
         output = output + "\tPar:\tVal\tErr\n"
         
         for name in list(self.parameters.keys()):
@@ -130,7 +130,7 @@ class sciData:
             if args[0] == 'L':
                 output = ''
                 for name in self.parameters.keys():
-                    output = output + '%f\t'%self.parameters[name]
+                    output = output + '%e\t'%self.parameters[name]
                 output = output + '%.3f\n'%Err
                 f= open(args[1],"a")
                 f.write(output)
