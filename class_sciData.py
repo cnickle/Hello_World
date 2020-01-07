@@ -13,14 +13,9 @@ import scipy.optimize as sco
 import numpy as np
 import random
 import math
+from class_gen import gen as genAlg
 
 class sciData:
-    fitbool = False
-    rawdat = {}
-    parameters = {}
-    errors = {}
-    modelDat = {}
-
 # %% Fitting functions
     def __fit(self,model,parBnds,parInitial):        
         p0=[]
@@ -53,54 +48,98 @@ class sciData:
             self.errors[name]  = np.sqrt(np.diag(covar))[cnt]
             cnt +=1
     
-    def randomized_fit(self,parBnds, parInitial):
-        parInitial = {}
-        for name in list(parBnds.keys()):
-            parInitial[name] = random.uniform(parBnds[name][0],parBnds[name][1])
-        results,__  = self.__fit(self.model,parBnds,parInitial)
-        standarderror = np.sum(np.subtract(
-                self.workingdat['Y'],
-                self.model(self.workingdat['X'], *results
-                           ))**2)
-        print(standarderror)
+#    def randomized_fit(self,parBnds, parInitial):
+#        parInitial = {}
+#        for name in list(parBnds.keys()):
+#            parInitial[name] = random.uniform(parBnds[name][0],parBnds[name][1])
+#        results,__  = self.__fit(self.model,parBnds,parInitial)
+#        standarderror = np.sum(np.subtract(
+#                self.workingdat['Y'],
+#                self.model(self.workingdat['X'], *results
+#                           ))**2)
+#        print(standarderror)
+    
+    def evolutionary(self, parBnds, popSize, genSize):
+        popObj = genAlg(parBnds,popSize)
+        
+        for gen in range(genSize):
+            weights = []
+            pop = popObj.nextgen(weights)
+            for count in pop.keys():
+                w = self.calcRelativeError(pop[count])
+                print('\t%.3f'%w)
+                weights += [w]
+            
+            print('Gen %d Avg: %.3f'%(gen,np.mean(weights)))
+            np.reciprocal(weights)
+            if gen > 0:
+                for name in popObj.parameters.keys():
+                    avg = np.mean(popObj.parameters[name])
+                    std = np.std(popObj.parameters[name])
+                    lower = avg-3*std
+                    higher = avg+3*std
+                    print('%s\t[%f,%f]'%(name,lower,higher))
+            
+            
 
 # %% Output Data and Plots
-#    def saveModel(self,fName):
-#        LogFileN='%s\\%s.txt' % (self.directory,fName)
-#        LogFile = open(LogFileN, 'w')
-#        for index in range(len(self.workingdat)):
-#            LogFile.write('%f\t%f\n' %(
-#                    self.workingdat['X'][index],
-#                    self.workingdat['Y'][index]))
-#        LogFile.close()
+    def parRange(self, initpar, par, ran, size = 10):        
+        pars = initpar.copy()
+        step = (ran[1]-ran[0])/size
+        t = np.arange(ran[0],ran[1],step)
         
+        output = ''
+        for i in t:
+            pars[par]=i
+            Err = self.calcRelativeError(pars)
+            for name in pars.keys():
+                output = output + '%e\t'%pars[name]
+            output = output + '%.3f\n'%Err
+            f= open('Test.txt',"a")
+            f.write(output)
+            f.close()
+            print('%.3e\t%.3f'%(i,Err))
+            
+    def returnThry(self, xvals, initpar=[]):
+        if not initpar:
+            initpar = self.parameters.copy()
+        yThr = self.model(xvals, *initpar.values())
+        dat = {'X': xvals,
+               'Y': yThr}
+        return dat
+    
     def calcRelativeError(self, initpar):
         X = self.workingdat['X']
         Y = self.workingdat['Y']
         Ythr = self.model(X,*initpar.values())
-        SE = np.mean(np.abs(np.subtract(Y,Ythr)/(np.max(Y)-np.min(Y))))*100
-        return SE
+        residual = np.subtract(np.log(np.abs(Y)),np.log(np.abs(Ythr)))
+        Error = np.sqrt(np.sum(residual**2))
+        return Error
     
-    def printFit(self):
-        output = "Fit Report:\n"
+    def printFit(self,*args):
+        Err = self.calcRelativeError(self.parameters)
+        output = "Fit Report:\tError:\t%.2f\n" % Err
         output = output + "\tPar:\tVal\tErr\n"
         
         for name in list(self.parameters.keys()):
-            output = output + "\t%s\t%f\t%f\n" %(name,
+            output = output + "\t%s\t%e\t%e\n" %(name,
                                                self.parameters[name],
                                                self.errors[name])
         print(output)
-        
+        if args:
+            if args[0] == 'L':
+                output = ''
+                for name in self.parameters.keys():
+                    output = output + '%e\t'%self.parameters[name]
+                output = output + '%.3f\n'%Err
+                f= open(args[1],"a")
+                f.write(output)
+                f.close()
+                
     def plot(self,*args):
         plt.figure()
         plt.scatter(self.rawdat['X'],self.rawdat['Y'],s=10,color='black')
         plt.autoscale(False)
-        #If par = I, plot the data with the initial parameters
-        if args[0] == 'I':
-            XThr = self.workingdat['X']
-            YThr = self.model(self.workingdat['X'],*args[1].values())
-            plt.plot(XThr,YThr)
-            print(np.sum(np.subtract(self.workingdat['Y'],YThr)**2))
         
         # If a fit has been done it will plot the model on top
         if self.fitbool:
@@ -108,24 +147,41 @@ class sciData:
             YThr = self.model(self.workingdat['X'], *self.parameters.values())
             plt.plot(XThr,YThr)
         
-        # If the user as specified a name for the plot, then the plot
-        # will be saved.
-#        if saveAs:
-#            PlotN = '%s\\%s.png' %(self.directory,saveAs)
-#            plt.savefig(PlotN)
-#            plt.close()
+        if args:
+        #If par = I, plot the data with the initial parameters
+            if args[0] == 'I':
+                Y = self.workingdat['Y']
+                XThr = self.workingdat['X']
+                YThr = self.model(self.workingdat['X'],*args[1].values())
+                plt.plot(XThr,YThr)
+                print(np.mean(np.abs(np.subtract(Y,YThr)/(np.max(Y)-np.min(Y))))*100)
+            
+            
+            
+        #If the user as specified a name for the plot, then the plotwill be saved.
+            if args[0] == 's':
+                PlotN = '%s\\%s.png' %(self.directory,args[1])
+                plt.savefig(PlotN)
+                plt.close()
 
 # %%Utility Functions           
-    def __init__(self,fName, directory,equation, rawdat = {}):
+    def __init__(self,fName, directory,equation, rawdat = {},scale = []):
+        self.fitbool = False
+        self.rawdat = {}
+        self.parameters = {}
+        self.errors = {}
+        self.scale = scale
+        self.modelDat = {}
+        
         self.directory  = directory
         self.fileName = fName
-        self.model = np.vectorize(
-                lambda x,*args: equation(x,*args)*self.scale[1])
         if not bool(rawdat):
             self.__readData()
         else:
             self.rawdat = rawdat
         self.workingdat = self.rawdat.copy()
+        self.model = np.vectorize(
+                lambda x,*args: equation(x,*args)*self.scale[1])
     
     def subsetData(self, xRange = []):
         X = self.rawdat['X']
@@ -157,7 +213,8 @@ class sciData:
             for V,E in reader:
                 X+=[V]
                 Y+=[E]
-        self.__calculatescale(Y)
+        if not self.scale:
+            self.__calculatescale(Y)
         self.rawdat['X'] = np.float64(X)
         self.rawdat['Y'] = np.float64(Y)*self.scale[1]
         
