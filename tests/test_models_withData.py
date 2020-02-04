@@ -5,6 +5,25 @@ import time
 import numpy as np
 directory = '%s'%os.getcwd()
 
+def reducedTunnelModel(vb, gammaL, gammaR, deltaE1, eta,sigma):
+    T = 300
+    c = 0
+    vg = 0   
+    gammaC = gammaL*gammaR
+    gammaW = gammaL+gammaR
+    
+    return models.tunnelmodel_singleLevel(vb,gammaC,gammaW, deltaE1,eta,sigma,c,vg,T)
+
+def reducedTunnelModel_NoGauss(vb, gammaL, gammaR, deltaE1, eta):
+    T = 300
+    c = 0
+    vg = 0
+    sigma = 0
+    gammaC = gammaL*gammaR
+    gammaW = gammaL+gammaR
+    
+    return models.tunnelmodel_singleLevel(vb,gammaC,gammaW, deltaE1,eta,sigma,c,vg,T)
+
 def test_2Hc2F(fName = 'tests\\2H-c-2F (amps).txt'):
     start = time.time()
     initpar = {
@@ -15,7 +34,7 @@ def test_2Hc2F(fName = 'tests\\2H-c-2F (amps).txt'):
         'width'   : 0.0087
         }
     
-    data = sciData(fName,directory,models.tunnelmodel_1level_nogate_300K_gauss)
+    data = sciData(fName,directory,reducedTunnelModel)
     SE=data.calcRelativeError(initpar)
     runtime = time.time()-start
     assert SE < 5 and runtime < 25
@@ -30,7 +49,7 @@ def test_2Hs2F(fName = 'tests\\2H-s-2F (amps).txt'):
         'width'   : 0.177987
         }
     
-    data = sciData(fName,directory,models.tunnelmodel_1level_nogate_300K_gauss)
+    data = sciData(fName,directory,reducedTunnelModel)
     SE=data.calcRelativeError(initpar)
     runtime = time.time()-start
     assert SE < 32 and runtime < 25
@@ -57,7 +76,7 @@ def test_2Hc2F_Nogauss(fName = 'tests\\2H-c-2F (amps).txt'):
         'eta'     : 0.582212
         }
     
-    data = sciData(fName,directory,models.tunnelmodel_1level_nogate_300K)
+    data = sciData(fName,directory,reducedTunnelModel_NoGauss)
     data.fit(bnds,initpar)
     
     for key in list(par.keys()):
@@ -85,7 +104,7 @@ def test_2Hs2F_Nogauss(fName = 'tests\\2H-s-2F (amps).txt'):
         'eta'     : 1.000000
         }
     
-    data = sciData(fName,directory,models.tunnelmodel_1level_nogate_300K)
+    data = sciData(fName,directory,reducedTunnelModel_NoGauss)
     data.fit(bnds,initpar)
     
     for key in list(par.keys()):
@@ -164,7 +183,8 @@ def test_memoryMolecule():
     residual = np.subtract(np.log(np.abs(yexp)),np.log(np.abs(ythr)))
     Error = np.sqrt(np.sum(residual**2))
     end = time.time()
-    assert Error< 14 and (end-start) < 20
+    runtime = end-start
+    assert Error< 14 and runtime < 22
 
 if __name__ == "__main__":
     test_2Hs2F('2H-s-2F (amps).txt')

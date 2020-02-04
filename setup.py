@@ -9,7 +9,7 @@ from setuptools import setup
     
 setup(
       name = 'penguins',
-      version = '0.1',
+      version = '1.0',
       description = 'A module for fitting data',
       author = 'Cameron Nickle',
       author_email = 'camnickle@gmail.com')

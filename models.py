@@ -66,81 +66,35 @@ def single_level_tunnel_model_integrand_Alt(E,ep,c,vg,eta,vb,gammaC,gammaW,T):
         ((E-((ep+c*vg)+(eta-1/2)*vb))**2+(gammaW/2)**2)
 
 def tunnelmodel_singleLevel(vb,gammaC,gammaW, deltaE1,eta,sigma,c,vg,T):
-    A = 1
-    args = (A,deltaE1,sigma)
-    A = 1/quad(gaussian,deltaE1-3*sigma,deltaE1+3*sigma,args=args)[0]
     
-    limits = [min([deltaE1-3*sigma,-1*np.abs(vb)]),\
-              max([deltaE1+3*sigma,1*np.abs(vb)])]
+    if sigma == 0:
+        limits = [-1*np.abs(vb),1*np.abs(vb)]
     
-    def integrand (E,ep):
-        result = gaussian(ep,A,deltaE1,sigma)*\
-        single_level_tunnel_model_integrand_Alt(E,ep,c,vg,eta,vb,gammaC,gammaW,T)
-        return result
-    
-    return q/h*dblquad(integrand,
-                       limits[0],
-                       limits[1],
-                       lambda x: limits[0],
-                       lambda x: limits[1])[0]
-
-def tunnelmodel_singleLevel_Gauss(vb,gammaC,gammaW, deltaE1,eta,c,vg,T):
-    limits = [-1*np.abs(vb),1*np.abs(vb)]
-    
-    def integrand (E):
-        result = single_level_tunnel_model_integrand_Alt(E,deltaE1,c,vg,eta,vb,gammaC,gammaW,T)
-        return result
-    
-    return q/h*quad(integrand,
-                       limits[0],
-                       limits[1])[0]
-    
-def tunnelmodel_1level_nogate_300K(vb, gammaL, gammaR, deltaE1, eta):
-    c  = 0*V
-    vg = 0*V
-    T  = 300*K
-    args = (deltaE1,c,vg,eta,vb,gammaL,gammaR,T)
-    limits = [min([-.1,-1*np.abs(vb)]),\
-              max([.1,1*np.abs(vb)])]
-    
-    return q/h*quad(single_level_tunnel_model_integrand,limits[0],limits[1],
-                    args = args)[0]    
-
-def tunnelmodel_1level_nogate_300K_gauss(vb, gammaL, gammaR, deltaE1, eta, sigma):
-    c  = 0*V
-    vg = 0*V
-    T = 300*K
-    A = 1
-    args = (A,deltaE1,sigma)
-    A = 1/quad(gaussian,deltaE1-3*sigma,deltaE1+3*sigma,args=args)[0]
-    
-    limits = [min([deltaE1-3*sigma,-1*np.abs(vb)]),\
-              max([deltaE1+3*sigma,1*np.abs(vb)])]
-    
-    def integrand (E,ep):
-        result = gaussian(ep,A,deltaE1,sigma)*\
-        single_level_tunnel_model_integrand(E,ep,c,vg,eta,vb,gammaL,gammaR,T)
-        return result
-    
-    return q/h*dblquad(integrand,
-                       limits[0],
-                       limits[1],
-                       lambda x: limits[0],
-                       lambda x: limits[1])[0]
-
-def tunnelmodel_2level_NoGauss(vb, Vg, T, eta, c,
-                             gammaL1, gammaR1, deltaE1,
-                             gammaL2, gammaR2, deltaE2):
-    gamma1 = gammaL1 + gammaR1
-    gamma2 = gammaL2 + gammaR2
-    
-    def integrand(E):
-        left  = (gammaL1*gammaR1)/((E-((deltaE1+c*Vg)+(eta-1/2)*vb))**2+gamma1**2/4)
-        right = (gammaL2*gammaR2)/((E-((deltaE2+c*Vg)+(eta-1/2)*vb))**2+gamma2**2/4)
+        def integrand (E):
+            result = single_level_tunnel_model_integrand_Alt(E,deltaE1,c,vg,eta,vb,gammaC,gammaW,T)
+            return result
         
-        return -(left+right)*(fermi(E+vb/2,T)-fermi(E-vb/2,T))
-    
-    return q/h*quad(integrand,-5,5)[0]
+        return q/h*quad(integrand,
+                           limits[0],
+                           limits[1])[0]
+    else:
+        A = 1
+        args = (A,deltaE1,sigma)
+        A = 1/quad(gaussian,deltaE1-3*sigma,deltaE1+3*sigma,args=args)[0]
+        
+        limits = [min([deltaE1-3*sigma,-1*np.abs(vb)]),\
+                  max([deltaE1+3*sigma,1*np.abs(vb)])]
+        
+        def integrand (E,ep):
+            result = gaussian(ep,A,deltaE1,sigma)*\
+            single_level_tunnel_model_integrand_Alt(E,ep,c,vg,eta,vb,gammaC,gammaW,T)
+            return result
+        
+        return q/h*dblquad(integrand,
+                           limits[0],
+                           limits[1],
+                           lambda x: limits[0],
+                           lambda x: limits[1])[0]
 
 def tunnelmodel_2level(vb,c,vg,T,
                        gammaC1, gammaW1, deltaE1, eta1, sigma1,
