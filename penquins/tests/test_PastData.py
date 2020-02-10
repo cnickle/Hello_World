@@ -1,9 +1,7 @@
-from class_sciData import sciData
-import models
-import os
+from penquins.class_sciData import sciData
+import penquins.models as models
 import time
 import numpy as np
-directory = '%s'%os.getcwd()
 
 def reducedTunnelModel(vb, gammaL, gammaR, deltaE1, eta,sigma):
     T = 300
@@ -34,7 +32,7 @@ def test_2Hc2F(fName = 'tests\\2H-c-2F (amps).txt'):
         'width'   : 0.0087
         }
     
-    data = sciData(fName,directory,reducedTunnelModel)
+    data = sciData(fName,reducedTunnelModel)
     SE=data.calcRelativeError(initpar)
     runtime = time.time()-start
     assert SE < 5 and runtime < 25
@@ -49,7 +47,7 @@ def test_2Hs2F(fName = 'tests\\2H-s-2F (amps).txt'):
         'width'   : 0.177987
         }
     
-    data = sciData(fName,directory,reducedTunnelModel)
+    data = sciData(fName,reducedTunnelModel)
     SE=data.calcRelativeError(initpar)
     runtime = time.time()-start
     assert SE < 32 and runtime < 25
@@ -76,7 +74,7 @@ def test_2Hc2F_Nogauss(fName = 'tests\\2H-c-2F (amps).txt'):
         'eta'     : 0.582212
         }
     
-    data = sciData(fName,directory,reducedTunnelModel_NoGauss)
+    data = sciData(fName,reducedTunnelModel_NoGauss)
     data.fit(bnds,initpar)
     
     for key in list(par.keys()):
@@ -89,7 +87,7 @@ def test_2Hs2F_Nogauss(fName = 'tests\\2H-s-2F (amps).txt'):
         'deltaE1' : 0.551646,
         'eta'     : 0.594323
         }
-
+    
     bnds = {
         'gammaL'  : [0,1],
         'gammaR'  : [0,1],
@@ -104,7 +102,7 @@ def test_2Hs2F_Nogauss(fName = 'tests\\2H-s-2F (amps).txt'):
         'eta'     : 1.000000
         }
     
-    data = sciData(fName,directory,reducedTunnelModel_NoGauss)
+    data = sciData(fName,reducedTunnelModel_NoGauss)
     data.fit(bnds,initpar)
     
     for key in list(par.keys()):
@@ -162,9 +160,8 @@ def test_memoryMolecule():
     # %% Set Up The Objects
     fNameH = 'tests\\newhighEnergy.txt'
     fNameL = 'tests\\newLowEnergy.txt'
-    highConduct = sciData(fNameH,directory,memoryMolecule_gauss)
-    LowConduct = sciData(fNameL,directory,memoryMolecule_gauss,
-                         scale = highConduct.scale)
+    highConduct = sciData(fNameH,memoryMolecule_gauss)
+    LowConduct = sciData(fNameL,memoryMolecule_gauss)
     yexp = np.append(highConduct.workingdat['Y'],LowConduct.workingdat['Y'])
     
     def Everything(initpar):
@@ -189,5 +186,5 @@ def test_memoryMolecule():
 if __name__ == "__main__":
     test_2Hs2F('2H-s-2F (amps).txt')
     test_2Hc2F('2H-c-2F (amps).txt')
-    test_2Hs2F('2H-s-2F (amps).txt')
-    test_2Hc2F('2H-c-2F (amps).txt')
+    test_2Hs2F_Nogauss('2H-s-2F (amps).txt')
+    test_2Hc2F_Nogauss('2H-c-2F (amps).txt')
