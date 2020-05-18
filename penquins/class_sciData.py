@@ -15,44 +15,8 @@ import warnings
 from numpy.random import random
 import math
 import time
-from penquins.class_gen import gen as genAlg
 
 class sciData:
-# %% Fitting functions    
-#    def randomized_fit(self,parBnds, parInitial):
-#        parInitial = {}
-#        for name in list(parBnds.keys()):
-#            parInitial[name] = random.uniform(parBnds[name][0],parBnds[name][1])
-#        results,__  = self.__fit(self.model,parBnds,parInitial)
-#        standarderror = np.sum(np.subtract(
-#                self.workingdat['Y'],
-#                self.model(self.workingdat['X'], *results
-#                           ))**2)
-#        print(standarderror)
-    
-    # def evolutionary(self, parBnds, popSize, genSize):
-    #     popObj = genAlg(parBnds,popSize)
-        
-    #     for gen in range(genSize):
-    #         weights = []
-    #         pop = popObj.nextgen(weights)
-    #         for count in pop.keys():
-    #             w = self.calcRelativeError(pop[count])
-    #             print('\t%.3f'%w)
-    #             weights += [w]
-            
-    #         print('Gen %d Avg: %.3f'%(gen,np.mean(weights)))
-    #         np.reciprocal(weights)
-    #         if gen > 0:
-    #             for name in popObj.parameters.keys():
-    #                 avg = np.mean(popObj.parameters[name])
-    #                 std = np.std(popObj.parameters[name])
-    #                 lower = avg-3*std
-    #                 higher = avg+3*std
-    #                 print('%s\t[%f,%f]'%(name,lower,higher))
-            
-            
-
 # %% Output Data and Plots
     def parRange(self, initpar, par, ran, size = 10, method = 'linear', plot = False):        
         pars = initpar.copy()
@@ -118,7 +82,7 @@ class sciData:
         if self.modelDat:
             return self.modelDat['X'], self.modelDat['Y']
         else:
-            return self.rawdat['X'], self.model(self.rawdat['X'], *initpar.values())    
+            return self.workingdat['X'], self.model(self.workingdat['X'], *initpar.values())    
     
     def __init__(self,fName, equation, rawdat = {}):
         self.fitbool = False
@@ -135,13 +99,12 @@ class sciData:
         else:
             self.rawdat = rawdat
         
-        minval = min(abs(np.nonzero(self.rawdat['Y'])[0]))
-        if minval < np.sqrt(np.finfo(float).eps):
+        minval = min(abs(self.rawdat['Y']))
+        if minval <np.sqrt(np.finfo(float).eps):
             # Due to curve_fit and machine precision limitations the data and
             # model are being scaled into the nano range. This should not 
             # effect the fitting parameters
-            warnings.warn("Scaling data and equation due to floating point percision")
-            print(minval)
+            # warnings.warn("Scaling data and equation due to floating point percision")
             self.scaling = True
             self.multiplier = 1E9
             self.rawdat['Y'] = self.rawdat['Y']*self.multiplier
@@ -194,7 +157,7 @@ class sciData:
         if parBnds:
             for parm in parBnds.keys():
                 if not (parInitial[parm] < parBnds[parm][1] and parInitial[parm] >parBnds[parm][0]):
-                    print('x0 is infeasible. Choosing random number')
+                    print('%s is infeasible. Choosing random number'%parm)
                     parInitial[parm] = parBnds[parm][0] + (random()*(parBnds[parm][1]-parBnds[parm][0]))
         
         results,covar  = self.__fit(self.model,parBnds,parInitial)
@@ -250,9 +213,7 @@ class sciData:
         X = self.workingdat['X']
         Y = self.workingdat['Y']
 
-        if self.modelDat:
-            Ythr = self.modelDat['Y']
-        else:
+        if not self.modelDat:
             self.modelDat['X'] = self.workingdat['X']
             self.modelDat['Y'] = self.model(X,*initpar.values())
             
@@ -273,7 +234,11 @@ class sciData:
         Error = np.sqrt(np.sum(residual**2))
         return Error
     
-    def printFit(self,save = '', relError = False):
+    def printFit(self,save = '', initpar = {}, relError = False):
+        if not self.parameters:
+            self.parameters = initpar.copy()
+            self.errors = initpar.copy()
+        
         if not relError:
             Err = self.calcLinearError(self.parameters)
         else:
@@ -282,15 +247,15 @@ class sciData:
         output = output + "\tPar:\tVal\tErr\n"
         
         for name in list(self.parameters.keys()):
-            output = output + "\t%s\t%e\t%e\n" %(name,
-                                               self.parameters[name],
-                                               self.errors[name])
+            if initpar:
+                self.errors[name] = np.inf
+            output = output + "\t%s\t%e\t%e\n" %(name, self.parameters[name], self.errors[name])
         print(output)
         if save:
             output = ''
             for name in self.parameters.keys():
                 output = output + '%e\t'%self.parameters[name]
-            output = output + '%.3f\n'%Err
+            output = output + '%.5f\n'%Err
             f= open(save,"a")
             f.write(output)
             f.close()

@@ -106,7 +106,29 @@ def tunnelmodel_2level(vb,c,vg,T,
     I1 = tunnelmodel_singleLevel(vb,*args1)
     I2 = tunnelmodel_singleLevel(vb,*args2)
     
-    return I1+I2 
+    return I1+I2
+
+@jit
+def averageBridgePopulation_integrand(E,ep,c,vg,eta,vb,gammaL,gammaR,T):    
+    gammaW = gammaL+gammaR
+    
+    return ((fermi(E+vb/2,T)*gammaL+gammaR*fermi(E-vb/2,T))/\
+        ((E-((ep+c*vg)+(eta-1/2)*vb))**2+(gammaW/2)**2))
+
+def averageBridgePopulation(vb, gammaL, gammaR, deltaE, eta, c, vg, T):
+    limits = [-10,10]
+    
+    def integrand (E):
+        result = averageBridgePopulation_integrand(E, deltaE, c, vg, eta, vb, gammaL, gammaR, T)
+        return result
+    
+    return quad(integrand,
+                        limits[0],
+                        limits[1])[0]/(2*np.pi)
+
+def NitzanSwitchingRate(vb, gammaL, gammaR, deltaE, eta, c, vg, T, R1, R2):
+    n = averageBridgePopulation(vb, gammaL, gammaR, deltaE, eta, c, vg, T)
+    return (1-n)*R1+n*R2
 
 def nitzanmodel_fixedtemp_gatevoltage(Vg,E,l):
     T0=260
@@ -144,5 +166,5 @@ def nitzanmodel_fixedtemp_gatevoltage(Vg,E,l):
     return FinalAns
 
 def nitzanmodel_fixedtemp_biasvoltage(V,E,l,cap,W,A):
-    Vg=cap*(1-1/(1+np.exp((V+A)/W)))
+    Vg=cap*(1-1/(1+np.exp((V-A)/W)))
     return nitzanmodel_fixedtemp_gatevoltage(Vg,E,l)
