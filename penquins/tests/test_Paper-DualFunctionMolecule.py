@@ -1,5 +1,5 @@
 from penquins.class_sciData import sciData
-import penquins.models as models
+import penquins.functions as fun
 import time
 import numpy as np
 
@@ -10,7 +10,7 @@ def reducedTunnelModel(vb, gammaL, gammaR, deltaE1, eta,sigma):
     gammaC = gammaL*gammaR
     gammaW = gammaL+gammaR
     
-    return models.tunnelmodel_singleLevel(vb,gammaC,gammaW, deltaE1,eta,sigma,c,vg,T)
+    return fun.tunnelmodel_singleLevel(vb,gammaC,gammaW, deltaE1,eta,sigma,c,vg,T)
 
 def reducedTunnelModel_NoGauss(vb, gammaL, gammaR, deltaE1, eta):
     T = 300
@@ -20,7 +20,7 @@ def reducedTunnelModel_NoGauss(vb, gammaL, gammaR, deltaE1, eta):
     gammaC = gammaL*gammaR
     gammaW = gammaL+gammaR
     
-    return models.tunnelmodel_singleLevel(vb,gammaC,gammaW, deltaE1,eta,sigma,c,vg,T)
+    return fun.tunnelmodel_singleLevel(vb,gammaC,gammaW, deltaE1,eta,sigma,c,vg,T)
 
 def test_memoryMolecule():
     start = time.time()
@@ -61,19 +61,19 @@ def test_memoryMolecule():
     
         args_L = (gammaL_L, gammaR_L, deltaE_L, eta_L,width_L,c,vg,T)
         
-        P_H = models.sigmoid(vb,pos,width)+(vb-1)*p0
+        P_H = fun.sigmoid(vb,pos,width)+(vb-1)*p0
         P_L = 1-P_H
         
-        I_H = models.tunnelmodel_2level(vb,c,vg,T,
+        I_H = fun.tunnelmodel_2level(vb,c,vg,T,
                                         gammaC1_H,gammaW1_H,deltaE1_H,eta1_H,sigma1_H,
                                         gammaC2_H,gammaW2_H,deltaE2_H,eta2_H,sigma2_H)
-        I_L = models.tunnelmodel_singleLevel(vb,*args_L)
+        I_L = fun.tunnelmodel_singleLevel(vb,*args_L)
         
         return P_H*I_H+P_L*I_L
     
     # %% Set Up The Objects
-    fNameH = 'tests\\newhighEnergy.txt'
-    fNameL = 'tests\\newLowEnergy.txt'
+    fNameH = 'tests\\Data\\newhighEnergy.txt'
+    fNameL = 'tests\\Data\\newLowEnergy.txt'
     highConduct = sciData(fNameH,memoryMolecule_gauss)
     LowConduct = sciData(fNameL,memoryMolecule_gauss)
     yexp = np.append(highConduct.workingdat['Y'],LowConduct.workingdat['Y'])

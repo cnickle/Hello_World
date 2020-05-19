@@ -1,5 +1,5 @@
 from penquins.class_sciData import sciData
-import penquins.models as models
+import penquins.functions as fun
 import time
 
 def reducedTunnelModel(vb, gammaL, gammaR, deltaE1, eta,sigma):
@@ -9,7 +9,7 @@ def reducedTunnelModel(vb, gammaL, gammaR, deltaE1, eta,sigma):
     gammaC = gammaL*gammaR
     gammaW = gammaL+gammaR
     
-    return models.tunnelmodel_singleLevel(vb,gammaC,gammaW, deltaE1,eta,sigma,c,vg,T)
+    return fun.tunnelmodel_singleLevel(vb,gammaC,gammaW, deltaE1,eta,sigma,c,vg,T)
 
 def reducedTunnelModel_NoGauss(vb, gammaL, gammaR, deltaE1, eta):
     T = 300
@@ -19,9 +19,9 @@ def reducedTunnelModel_NoGauss(vb, gammaL, gammaR, deltaE1, eta):
     gammaC = gammaL*gammaR
     gammaW = gammaL+gammaR
     
-    return models.tunnelmodel_singleLevel(vb,gammaC,gammaW, deltaE1,eta,sigma,c,vg,T)
+    return fun.tunnelmodel_singleLevel(vb,gammaC,gammaW, deltaE1,eta,sigma,c,vg,T)
 
-def test_2Hc2F(fName = 'tests\\2H-c-2F (amps).txt'):
+def test_2Hc2F(fName = 'tests\\Data\\2H-c-2F (amps).txt'):
     start = time.time()
     initpar = {
         'gammaL'  : 0.032248,
@@ -36,7 +36,7 @@ def test_2Hc2F(fName = 'tests\\2H-c-2F (amps).txt'):
     runtime = time.time()-start
     assert SE < 5 and runtime < 25
     
-def test_2Hs2F(fName = 'tests\\2H-s-2F (amps).txt'):
+def test_2Hs2F(fName = 'tests\\Data\\2H-s-2F (amps).txt'):
     start = time.time()
     initpar = {
         'gammaL'  : 0.000060,
@@ -51,7 +51,7 @@ def test_2Hs2F(fName = 'tests\\2H-s-2F (amps).txt'):
     runtime = time.time()-start
     assert SE < 32 and runtime < 25
 
-def test_2Hc2F_Nogauss(fName = 'tests\\2H-c-2F (amps).txt'):
+def test_2Hc2F_Nogauss(fName = 'tests\\Data\\2H-c-2F (amps).txt'):
     initpar = {
         'gammaL'  : 0.000256,
         'gammaR'  : 0.463199,
@@ -79,7 +79,7 @@ def test_2Hc2F_Nogauss(fName = 'tests\\2H-c-2F (amps).txt'):
     for key in list(par.keys()):
         assert abs((par[key]-data.parameters[key])/par[key]) < 0.05
 
-def test_2Hs2F_Nogauss(fName = 'tests\\2H-s-2F (amps).txt'):
+def test_2Hs2F_Nogauss(fName = 'tests\\Data\\2H-s-2F (amps).txt'):
     initpar = {
         'gammaL'  : 0.000256,
         'gammaR'  : 0.463199,

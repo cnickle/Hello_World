@@ -1,18 +1,18 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import penquins.models as models
+import penquins.functions as fun
 
 def reducedBridgePop(vb, gammaL, gammaR, deltaE, eta):
     c = 0
     vg = 0
     T = 300
-    return models.averageBridgePopulation(vb, gammaL, gammaR, deltaE, eta, c, vg, T)
+    return fun.averageBridgePopulation(vb, gammaL, gammaR, deltaE, eta, c, vg, T)
 
 def reducedNitzanSwitchingRate(vb, gammaL, gammaR, deltaE, eta, sigma, R1, R2):
     c = 0
     vg = 0
     T = 300
-    return models.NitzanSwitchingRate(vb, gammaL, gammaR, deltaE, eta, sigma, c, vg, T, R1, R2)
+    return fun.NitzanSwitchingRate(vb, gammaL, gammaR, deltaE, eta, sigma, c, vg, T, R1, R2)
 
 def test_averageBridgePopulation():
     v = np.arange(-2,1,.1)

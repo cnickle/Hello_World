@@ -17,4 +17,6 @@ B) More flexibility is needed with regards to plotting options. I won't to be ab
 
 C) I want the fitting function to have multiple options. I want to be able to fit, with scipy's curve_fit, minimize, or differiential_evolution algorithms at the choice of the user. These have different requirements so that will have to be addressed.
 
-D) I want the fitting function to be able to have multiple modes, a 'quiet' mode in which very little is printed to the console, a 'normal' mode in which the fitting parameters and the error are printed to console, and finally a 'verbose' mode in which not only are all the parameters printed to console, but a folders are created that contain a file that shows all of the parameters with the error, and plots showing the model. 
+D) I want the fitting function to be able to have multiple modes, a 'quiet' mode in which very little is printed to the console, a 'normal' mode in which the fitting parameters and the error are printed to console, and finally a 'verbose' mode in which not only are all the parameters printed to console, but a folders are created that contain a file that shows all of the parameters with the error, and plots showing the model.
+
+E) I want a an easy way to 'fix' parameters!

@@ -1,4 +1,4 @@
-import penquins.models as models
+import penquins.functions as fun
 
 def reducedTunnelModel(vb, gammaL, gammaR, deltaE1, eta,sigma):
     T = 300
@@ -7,7 +7,7 @@ def reducedTunnelModel(vb, gammaL, gammaR, deltaE1, eta,sigma):
     gammaC = gammaL*gammaR
     gammaW = gammaL+gammaR
     
-    return models.tunnelmodel_singleLevel(vb,gammaC,gammaW, deltaE1,eta,sigma,c,vg,T)
+    return fun.tunnelmodel_singleLevel(vb,gammaC,gammaW, deltaE1,eta,sigma,c,vg,T)
 
 def reducedTunnelModel_NoGauss(vb, gammaL, gammaR, deltaE1, eta):
     T = 300
@@ -17,7 +17,7 @@ def reducedTunnelModel_NoGauss(vb, gammaL, gammaR, deltaE1, eta):
     gammaC = gammaL*gammaR
     gammaW = gammaL+gammaR
     
-    return models.tunnelmodel_singleLevel(vb,gammaC,gammaW, deltaE1,eta,sigma,c,vg,T)
+    return fun.tunnelmodel_singleLevel(vb,gammaC,gammaW, deltaE1,eta,sigma,c,vg,T)
     
 
 def test_compare_with_mathematica():

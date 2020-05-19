@@ -16,6 +16,8 @@ from numpy.random import random
 import math
 import time
 
+
+print('This version is depreciated please convert to newModel version')
 class sciData:
 # %% Output Data and Plots
     def parRange(self, initpar, par, ran, size = 10, method = 'linear', plot = False):        
