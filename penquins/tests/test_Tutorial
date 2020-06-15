@@ -1,0 +1,90 @@
+import pandas as pd
+from penquins.Model import Model
+import penquins.functions as fun
+import numpy as np
+import matplotlib.pyplot as plt
+
+def test_BTTF():
+    # First we need to create a model so we'll use the
+    # 'newModel' module to create a new model for us
+    # using one of the premade functions in the
+    # 'functions' module you can always create your own
+    # if you desire.
+    
+    # The newModel module as multiple methods you can
+    # use, by default is uses scipy.optimize.curve_fit
+    # function.
+    
+    # We start by creating an instance of the the 'Model'
+    # class we will call this instance 'line' and we will
+    # use the 'linear' function from the funcions module
+    line = Model(fun.linear)
+    
+    # Now one thing that you might want to do first is
+    # to plot your new model. But first you're going to
+    # need to give it some parameters.
+    
+    # The newModel module takes the parameters in the
+    # form of a dictionary with the names being the
+    # keys and the values being the parameters. This
+    # is done to make it easier to understand
+    params = {
+        'm' : 1,
+        'b' : 1
+        }
+    line.setparameters(params)
+    
+    # Now that we have set the parameters for the model
+    # we can plot the model by itself.
+    line.plot(x = np.linspace(-1,1,100), color = 'red', label = 'First')
+    
+    # We can access the plot by using the model ID. Each
+    # time a new instance of a model is created, it is
+    # given an ID. Using this ID we can access the plot
+    # I'm going to plot a single black dot on the figure
+    # to demonstrate.
+    
+    plt.figure(line.ID)
+    plt.scatter([-1],[1], color = 'black', label = 'Dot')
+    
+    # Now I'm going to plot withe a different set of
+    # parameters. 
+    
+    params = {
+        'm' : -1,
+        'b' : 1
+        } 
+    line.plot(x = np.linspace(-1,1,100), params = params, color = 'blue', label = 'Second')
+    plt.legend()
+    plt.show()
+    
+    # Now let's add data and do an actual fit to the data.
+    # The most important thing is to grab the data via a
+    # pandas dataframe. The below function grabs the
+    # data from a txt file that is in the Data folder and
+    # is tab delimited and doesn't have any 'headers'.
+    # It then puts this data in a  dataframe called
+    # 'dataDF'
+    dataDF = pd.read_csv('Data\\BTTF.txt',delimiter = '\t', header = None)
+    
+    # I'm going to rename the columns to be X and Y and then plot
+    # the data. 
+    dataDF.columns = ['X','Y']
+    plt.figure('BTTF')
+    plt.scatter(dataDF['X'],dataDF['Y'], color = 'black', label = 'Data')
+    
+    # Now I'm going to grab the model from the funcions model for
+    # activation energy and plot that with the data with exxample
+    # parameters. 
+    E_act = Model(fun.E_act_fixedtemp_biasvoltage)
+    params = {
+        'Energy' : -1.05,
+        'ReorgE' : 1.1,
+        'Cap'    : 1.45,
+        'Width'  : 0.22,
+        'Center' : .68
+        }
+    E_act.plot(dataDF['X'],params = params)
+
+if __name__ == '__main__':
+    test_BTTF()

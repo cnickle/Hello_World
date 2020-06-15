@@ -137,7 +137,7 @@ def NitzanSwitchingRate(vb, gammaL, gammaR, deltaE, eta, c, vg, T, R1, R2):
 
 # %% This is another Nitzan Function that was applied to the BTTF
 #    molecule
-def nitzanmodel_fixedtemp_gatevoltage(Vg,E,l):
+def E_act_fixedtemp_gatevoltage(Vg,E,l):
     T0=260
     T1=330
     
@@ -172,6 +172,6 @@ def nitzanmodel_fixedtemp_gatevoltage(Vg,E,l):
     FinalAns=-1000*kb*T0**2*(leftSide-rightSide)/(T1-T0)
     return FinalAns
 
-def nitzanmodel_fixedtemp_biasvoltage(V,E,l,cap,W,A):
+def E_act_fixedtemp_biasvoltage(V,E,l,cap,W,A):
     Vg=cap*(1-1/(1+np.exp((V-A)/W)))
-    return nitzanmodel_fixedtemp_gatevoltage(Vg,E,l)
+    return E_act_fixedtemp_gatevoltage(Vg,E,l)
