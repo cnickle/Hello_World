@@ -1,5 +1,5 @@
-from penquins.class_sciData import sciData
-import penquins.models as models
+from penguins.class_sciData import sciData
+import penguins.models as models
 import time
 
 def reducedTunnelModel(vb, gammaL, gammaR, deltaE1, eta,sigma):

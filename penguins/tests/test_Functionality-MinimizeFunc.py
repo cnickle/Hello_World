@@ -1,7 +1,7 @@
-import penquins.models as models
+import penguins.models as models
 import numpy as np
 import matplotlib.pyplot as plt
-from penquins.class_sciData import sciData
+from penguins.class_sciData import sciData
 
 def reducedTunnelModel(vb, gammaC, gammaW, deltaE1, eta):
     T = 300

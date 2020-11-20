@@ -1,4 +1,4 @@
-import penquins.models as models
+import penguins.models as models
 
 def reducedTunnelModel(vb, gammaL, gammaR, deltaE1, eta,sigma):
     T = 300

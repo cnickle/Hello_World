@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import penquins.models as models
+import penguins.models as models
 
 def reducedBridgePop(vb, gammaL, gammaR, deltaE, eta):
     c = 0
