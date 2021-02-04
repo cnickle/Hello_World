@@ -1,0 +1,6 @@
+README.txt
+setup.py
+penguins.egg-info/PKG-INFO
+penguins.egg-info/SOURCES.txt
+penguins.egg-info/dependency_links.txt
+penguins.egg-info/top_level.txt
