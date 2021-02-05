@@ -44,6 +44,13 @@ def test_memoryMolecule(fNameH = 'tests\\Data\\newhighEnergy.txt',
             'Vg'            :  0,
             'T'             :  300
             }
+    ['p0_L2H','c','Vg','T']
+    Fixed = {
+            'p0_L2H'        :  0.00,
+            'c'             :  0,
+            'Vg'            :  0,
+            'T'             :  300
+            }
     
     DataH = pd.read_csv(fNameH,delimiter = '\t',header=None)
     DataH.columns = ['V','I']
@@ -80,7 +87,7 @@ def test_memoryMolecule(fNameH = 'tests\\Data\\newhighEnergy.txt',
         return np.append(mod1,mod2)
     
     ToyModel = mod(Everything)
-    ToyModel.setParams(initpar,fixed=['p0_L2H','c','Vg','T'])
+    ToyModel.setParams(initpar,Fixed=Fixed)
     
     xVals = np.append(DataH['V'],DataL['V'])
     yVals = np.append(DataH['I'],DataL['I'])

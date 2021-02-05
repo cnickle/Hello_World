@@ -36,7 +36,7 @@ class Model:
         self.time = 0
     
     #%% Setting Parameters
-    def setParams(self, parameters, bnds = None, calculatedParams={}, fixed = []):
+    def setParams(self, parameters, bnds = None, calculatedParams={}, Fixed = None):
         """
         Here we set the initial parameters and fixed parameters. This function
         creates:
@@ -61,33 +61,37 @@ class Model:
         -------
         None
         """
+        if Fixed == None:
+            fixed = []
+        else:
+            if type(Fixed) == dict:
+                fixed = Fixed.keys()
+            if type(Fixed) == list:
+                fixed = Fixed
         
-        #Check to make sure that the initial parameters lie inside the bounds
+                #Check to make sure that the initial parameters lie inside the bounds
         if not bnds == None:
             for par in bnds.keys():
                 if par in fixed: continue
-                
                 if parameters[par]<bnds[par][0] or parameters[par]>bnds[par][1]:
                     print('The initial value for %s is outside the bounds given. A number between the bounds is being choosen.'%par)
                     parameters[par] = (bnds[par][0]+bnds[par][1])/2
-        
-        
         self.calculatedParams = calculatedParams
         self.bounds = bnds
-        if fixed == None:
-            self.parameters = parameters.copy()
-            self.initialParameters = parameters.copy()
-        else:
-            self.parameters = parameters.copy()
-            self.initialParameters = parameters.copy()
+        self.initialParameters = parameters.copy()
+        self.parameters = parameters.copy()
+        
+        if not fixed == None:
             self.fixed = fixed
             
             for par in fixed:
-                if par in self.initialParameters.keys():
-                    del self.initialParameters[par]
-                if not self.bounds == None:
-                    if par in self.bounds.keys():
-                        del self.bounds[par]
+                del self.initialParameters[par]
+                if type(Fixed) == dict:
+                    self.parameters[par] = Fixed[par]
+                
+                if self.bounds == None: continue
+                if par in self.bounds.keys():
+                    del self.bounds[par]
             
             def reducedfunc(Xvals,*args):
                 for i,par in enumerate(self.initialParameters.keys()):
@@ -96,6 +100,10 @@ class Model:
                 
                 return self.originalFunction(Xvals,* self.parameters.values())            
             self.function = reducedfunc
+            
+
+        
+        
     
     #%% Calculate Function
     def returnThry(self,Xvals, pars=[]):
@@ -288,7 +296,7 @@ class Model:
             If you choose 'Verbose' then you can also specify a location to
             save all of the results from the fit. The default is ''.
 
-        """
+        """        
         self.time = time.time()
         self.alg = algorithm
         self.method  = method

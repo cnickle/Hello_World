@@ -214,7 +214,7 @@ def test_Model_Fitted():
         currs = np.append(currs, data['I'])
     
     NitzModel = mod(minfunc)
-    NitzModel.setParams(initpar,fixed=Fixed)
+    NitzModel.setParams(initpar,Fixed=Fixed)
     NitzModel.fit(volts, currs, algorithm = 'LS', method='dogbox',scale = 'lin',
                   mode = 'verbose', save = 'TotalScanRate')
     NitzModel.print(volts,currs)

@@ -25,7 +25,13 @@ def test_TestingFit_2Hc2F(fName = 'tests\\Data\\2H-c-2F (amps).txt'):
         'Temp'    : 300
        }
     
-    fixed=['n', 'width','Cap','Vg','Temp']
+    Fixed={
+        'n'       : 1,
+        'width'   : 0,
+        'Cap'     : 0,
+        'Vg'      : 0,
+        'Temp'    : 300
+       }
     
     bnds = {
         'gammaC'  : [1E-6*1E-6,1],
@@ -46,7 +52,7 @@ def test_TestingFit_2Hc2F(fName = 'tests\\Data\\2H-c-2F (amps).txt'):
     
     SLT = mod(tunnelModel)
     SLT.setParams(initPar,bnds = bnds,calculatedParams=calculatedParams,
-                  fixed=fixed)
+                  Fixed=Fixed)
     
     SLT.fit(Data_2Hs2F['V'],Data_2Hs2F['I'], mode = 'verbose',
             save = '2Hc2F_AllParams.txt', scale = 'lin')

@@ -36,7 +36,7 @@ def test_2Hs2F_FinalValue(fName = 'tests\\Data\\2H-s-2F (amps).txt'):
        }
 
     SLT = mod(TunnelModel_alt)
-    SLT.setParams(initPar,fixed=['Cap','Vg','Temp'])
+    SLT.setParams(initPar,Fixed=['Cap','Vg','Temp'])
     Error = SLT.standardError(Data_2Hs2F['V'],Data_2Hs2F['I'], scale='log')
     assert (Error-1.15)/Error*100 < 5
     
@@ -76,7 +76,7 @@ def test_2Hs2F_Fit(fName = 'tests\\Data\\2H-s-2F (amps).txt'):
         }
 
     SLT = mod(TunnelModel_alt)
-    SLT.setParams(initPar,fixed=['width','Cap','Vg','Temp'],bnds=bnds)
+    SLT.setParams(initPar,Fixed=['width','Cap','Vg','Temp'],bnds=bnds)
     SLT.fit(Data_2Hs2F['V'],Data_2Hs2F['I'], algorithm = 'LS')
     
     for par in pars:
@@ -103,7 +103,7 @@ def test_2Hc2F_FinalValue(fName = 'tests\\Data\\2H-c-2F (amps).txt'):
        }
 
     SLT = mod(TunnelModel_alt)
-    SLT.setParams(initPar,fixed=['width','Cap','Vg','Temp'])
+    SLT.setParams(initPar,Fixed=['width','Cap','Vg','Temp'])
     Error = SLT.standardError(Data_2Hc2F['V'],Data_2Hc2F['I'], scale='log')
     assert (Error-0.33)/Error*100 < 5    
     
@@ -144,7 +144,7 @@ def test_2Hc2F_Fit(fName = 'tests\\Data\\2H-c-2F (amps).txt'):
         }
 
     SLT = mod(TunnelModel_alt)
-    SLT.setParams(initPar,fixed=['width','Cap','Vg','Temp'],bnds=bnds)
+    SLT.setParams(initPar,Fixed=['width','Cap','Vg','Temp'],bnds=bnds)
     SLT.fit(Data_2Hs2F['V'],Data_2Hs2F['I'], algorithm = 'LS')
     
     for par in pars:
