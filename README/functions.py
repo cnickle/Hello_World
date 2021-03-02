@@ -4,14 +4,12 @@ Created on Thu Sep 19 18:46:23 2019
 Functions to be used in fitting and calculations
 @author: Cameron
 """
-import numpy             as np
-import pandas            as pd
+import numpy as np
+from scipy.integrate import quad
+from scipy.integrate import dblquad
+from numba import jit
+import pandas as pd
 import matplotlib.pyplot as plt
-from scipy.interpolate import interp1d
-from scipy.integrate   import quad
-from scipy.integrate   import dblquad
-from numba             import jit
-
 
 eV = 1 #Energy
 K  = 1 #Temperature Units
@@ -22,43 +20,6 @@ V  = 1 #volts
 kb = 8.6173324e-5*eV/K #Boltzmann Constant
 q  = 1.6e-19*C
 h  = 4.1356e-15*eV*s
-
-def interp1D(func, step = .01):
-    """
-    This function works a bit like numpy.vectorize. You input a function that
-    you wish to vectorize and it returns the vectorized version. However, unlike
-    numpy, it only cacluates unique values the first input (usually the bias 
-    voltage in our case). This means that if the experimentalists do 4 sweeps
-    of the voltage i.e. every voltage value is repeated 4 times. It only computes
-    it once.
-    
-    Furthermore, it computes the x values at the 'step' location. So let's say
-    you're looking a votlage data and the step is set to 0.01 it only calculates
-    the current every 10 mV and interpolates the rest. This value for the step
-    can be varied.    
-
-    Parameters
-    ----------
-    func : function
-        Function to be interpolated.
-    step : TYPE, optional
-        The default is .01.
-
-    Returns
-    -------
-    function
-        Returns interpolated function.
-
-    """
-    def wrap(x, *args):
-        Xunique = np.arange(np.min(x),np.max(x)+step,step)
-        
-        vecFun = np.vectorize(func)
-        Yunique = vecFun(Xunique,*args)
-        
-        interpFun = interp1d(Xunique,Yunique)
-        return interpFun(x)
-    return wrap
 
 # %% Some Basic Mathematical Functions
 @jit
@@ -137,17 +98,6 @@ def tunnelmodel_singleLevel(vb,n, gammaC,gammaW, deltaE1,eta,sigma,c,vg,T):
                            lambda x: limits[0],
                            lambda x: limits[1])[0]
 
-def fast_func(func, xarray, *args):
-    vfunc = np.vectorize(func)
-    unique = np.array(set(xarray))
-    Ythr = vfunc(unique,*args)
-    
-    Iret = []
-    for i,x in enumerate(xarray):
-        print(x)
-        
-    
-
 # This is the 2 level version of the Single Level tunnel model.
 # This isn't really needed to be a seperate model as you simply need
 # To add the contributions from each level.
@@ -200,19 +150,19 @@ def HysteresisModel_withP(vb, n, gammaL, gammaR, kappa, sigma, E_AB, E_AC, chi, 
         calcDB = pd.DataFrame()
         calcDB['V'] = sorted(volts)
         
-        eqSTL = interp1D(tunnelmodel_singleLevel)
+        eqSTL = np.vectorize(tunnelmodel_singleLevel)
         calcDB['I_np'] = eqSTL(calcDB['V'], n, gammaL*gammaR, gammaL+gammaR, E_AB,
                                 eta, sigma, c, vg, T)
         calcDB['I_p'] = eqSTL(calcDB['V'], n, gammaL*gammaR*kappa**2,
                               (gammaL+gammaR)*kappa, E_AB+chi, eta, sigma, c, vg,
                               T)      
         
-        eqETRates = interp1D(MarcusETRates)
+        eqETRates = np.vectorize(MarcusETRates)
         calcDB['R_AC'], calcDB['R_CA'] = eqETRates(calcDB['V'], gam, lam, E_AC, T)
         calcDB['R_BD'], calcDB['R_DB'] = eqETRates(calcDB['V'], gam*kappa, lam,
                                                    E_AC+chi, T)
         
-        eqBridge = interp1D(averageBridgePopulation)
+        eqBridge = np.vectorize(averageBridgePopulation)
         calcDB['n_np'] = eqBridge(calcDB['V'], gammaL, gammaR, E_AB, eta, c, vg, T)
         calcDB['n_p']  = eqBridge(calcDB['V'], gammaL*kappa, gammaR*kappa,
                                   E_AB+chi, eta, c, vg, T)
