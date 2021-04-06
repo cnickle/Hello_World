@@ -137,17 +137,6 @@ def tunnelmodel_singleLevel(vb,n, gammaC,gammaW, deltaE1,eta,sigma,c,vg,T):
                            lambda x: limits[0],
                            lambda x: limits[1])[0]
 
-def fast_func(func, xarray, *args):
-    vfunc = np.vectorize(func)
-    unique = np.array(set(xarray))
-    Ythr = vfunc(unique,*args)
-    
-    Iret = []
-    for i,x in enumerate(xarray):
-        print(x)
-        
-    
-
 # This is the 2 level version of the Single Level tunnel model.
 # This isn't really needed to be a seperate model as you simply need
 # To add the contributions from each level.
@@ -239,6 +228,58 @@ def HysteresisModel_withP(vb, n, gammaL, gammaR, kappa, sigma, E_AB, E_AC, chi, 
         
         return I, Parray
 
+def HysteresisModel_witht(vb, t, n, gammaL, gammaR, kappa, sigma, E_AB, E_AC, chi, eta,
+                  gam, lam, P, c, vg, T):
+        t = np.array(t)
+        volts = list(set(np.round(vb,2)))
+    
+        #%% Calculate all currents:
+        calcDB = pd.DataFrame()
+        calcDB['V'] = sorted(volts)
+        
+        eqSTL = interp1D(tunnelmodel_singleLevel)
+        calcDB['I_np'] = eqSTL(calcDB['V'], n, gammaL*gammaR, gammaL+gammaR, E_AB,
+                                eta, sigma, c, vg, T)
+        calcDB['I_p'] = eqSTL(calcDB['V'], n, gammaL*gammaR*kappa**2,
+                              (gammaL+gammaR)*kappa, E_AB+chi, eta, sigma, c, vg,
+                              T)      
+        
+        eqETRates = interp1D(MarcusETRates)
+        calcDB['R_AC'], calcDB['R_CA'] = eqETRates(calcDB['V'], gam, lam, E_AC, T)
+        calcDB['R_BD'], calcDB['R_DB'] = eqETRates(calcDB['V'], gam*kappa, lam,
+                                                   E_AC+chi, T)
+        
+        eqBridge = interp1D(averageBridgePopulation)
+        calcDB['n_np'] = eqBridge(calcDB['V'], gammaL, gammaR, E_AB, eta, c, vg, T)
+        calcDB['n_p']  = eqBridge(calcDB['V'], gammaL*kappa, gammaR*kappa,
+                                  E_AB+chi, eta, c, vg, T)
+        
+        calcDB['k_S0_S1'] = (1-calcDB['n_np'])*calcDB['R_AC'] + calcDB['n_np']*calcDB['R_BD']
+        calcDB['k_S1_S0'] = (1-calcDB['n_p'])*calcDB['R_CA'] + calcDB['n_p']*calcDB['R_DB']
+            
+        
+        I = []
+        Parray = []
+        delArray = []
+        for i,V in enumerate(vb):
+            if i == 0:
+                delt = t[i]
+            else:
+                delt = (t[i]-t[i-1])
+            
+            V = np.round(V,2)
+            tempDf =calcDB[calcDB['V']==np.round(V,2)].reset_index()
+            calcs = dict(tempDf.iloc[0])
+            
+            Parray += [P]
+            I += [((1-P)*calcs['I_np']+P*calcs['I_p'])]
+            
+            dPdt = calcs['k_S0_S1']-P*(calcs['k_S0_S1']+calcs['k_S1_S0'])
+            delArray += [dPdt]
+            P = P+dPdt*delt
+        
+        return I
+
 def HysteresisModel(vb, n, gammaL, gammaR, kappa, sigma, E_AB, E_AC, chi, eta,
                   gam, lam, P, u, c, vg, T):
     I, __ = HysteresisModel_withP(vb, n, gammaL, gammaR, kappa, sigma, E_AB,
@@ -282,6 +323,12 @@ def E_act_fixedtemp_gatevoltage(Vg,E,l):
     FinalAns=-1000*kb*T0**2*(leftSide-rightSide)/(T1-T0)
     return FinalAns
 
-def E_act_fixedtemp_biasvoltage(V,E,l,cap,W,A):
-    Vg=cap*(1-1/(1+np.exp((V-A)/W)))
+def charge(V,A,W):
+    #Positive
+    return(1-1/(1+np.exp((V-A)/W)))
+    #Negative
+    # return(1/(1+np.exp((V+A)/W)))
+
+def E_act_fixedtemp_biasvoltage(V,E,l,cap,A,W):
+    Vg=cap*charge(V,A,W)
     return E_act_fixedtemp_gatevoltage(Vg,E,l)

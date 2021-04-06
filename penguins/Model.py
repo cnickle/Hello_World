@@ -34,6 +34,8 @@ class Model:
         self.originalFunction = function
         self.function = function
         self.time = 0
+        self.alg  = 'Manual'
+        self.method  = 'None'
     
     #%% Setting Parameters
     def setParams(self, parameters, bnds = None, calculatedParams={}, Fixed = None):
@@ -102,9 +104,6 @@ class Model:
             self.function = reducedfunc
             
 
-        
-        
-    
     #%% Calculate Function
     def returnThry(self,Xvals, pars=[]):
         """
@@ -130,7 +129,7 @@ class Model:
         except:
             func = np.vectorize(self.function)
             Yvals = func(Xvals,*pars)
-        return Yvals
+        return np.array(Yvals)
     
     #%% Calculate Residual
     def residual(self, Xvals, Yvals, pars=[], scale = 'lin', fit=False,
@@ -173,11 +172,11 @@ class Model:
             Ythr = np.log10(np.abs(self.returnThry(Xvals, pars)))
         else:
             raise ValueError('Not an appropirate scale')
-            
+        
+        Err = np.log10(np.sqrt(np.sum(np.subtract(Y,Ythr)**2 )))
+        if save:
+            self.saveParams(pars, Err, save)    
         if mode == 'verbose':
-            Err = np.log10(np.sqrt(np.sum(np.subtract(Y,Ythr)**2 )))
-            self.saveParams(pars, Err, save)
-
             if self.counter % 50 == 0:
                 totTime = time.gmtime(time.time()-self.time)
                 print('Calls: %d\tErr: %.2f\tTime: %s'%(self.counter,Err,time.strftime("%H:%M:%S",totTime)))
@@ -186,7 +185,10 @@ class Model:
         minval = np.median(abs(Y))
         if fit and minval < np.sqrt(np.finfo(float).eps):
             Y = Y*1E9
-            Ythr = Ythr*1E9
+            try:
+                Ythr = Ythr*1E9
+            except:
+                Ythr = Ythr*1E9
         return np.subtract(Y,Ythr)
     
     #%% Calculate StandardError
@@ -387,6 +389,7 @@ class Model:
             Error calculated on log or lin scale. The default is 'lin'.
         """
         Err  = self.standardError(Xvals, Yvals, scale=scale)
+        
         chi2 = self.chi2(Xvals, Yvals, scale = scale)
         
         output = "\n\033[4mFIT REPORT" + ' '*32+'\033[0m\n'
