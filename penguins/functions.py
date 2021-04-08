@@ -289,8 +289,8 @@ def HysteresisModel(vb, n, gammaL, gammaR, kappa, sigma, E_AB, E_AC, chi, eta,
 # %% This is another Nitzan Function that was applied to the BTTF
 #    molecule
 def E_act_fixedtemp_gatevoltage(Vg,E,l):
-    T0=260
-    T1=330
+    T0=298
+    T1=300
     
     def integrandOne(ep):
         num=np.exp(-((E+Vg/2)+ep-l)**2/(4*kb*T0*l))
@@ -330,5 +330,5 @@ def charge(V,A,W):
     # return(1/(1+np.exp((V+A)/W)))
 
 def E_act_fixedtemp_biasvoltage(V,E,l,cap,A,W):
-    Vg=cap*charge(V,A,W)
+    Vg=cap*(1-1/(1+np.exp((V+A)/W)))
     return E_act_fixedtemp_gatevoltage(Vg,E,l)
