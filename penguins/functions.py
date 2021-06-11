@@ -288,9 +288,7 @@ def HysteresisModel(vb, n, gammaL, gammaR, kappa, sigma, E_AB, E_AC, chi, eta,
 
 # %% This is another Nitzan Function that was applied to the BTTF
 #    molecule
-def E_act_fixedtemp_gatevoltage(Vg,E,l):
-    T0=298
-    T1=300
+def E_act_fixedtemp_gatevoltage(Vg,E,l,T0,T1):
     
     def integrandOne(ep):
         num=np.exp(-((E+Vg/2)+ep-l)**2/(4*kb*T0*l))
@@ -323,12 +321,15 @@ def E_act_fixedtemp_gatevoltage(Vg,E,l):
     FinalAns=-1000*kb*T0**2*(leftSide-rightSide)/(T1-T0)
     return FinalAns
 
-def charge(V,A,W):
-    #Positive
-    return(1-1/(1+np.exp((V-A)/W)))
-    #Negative
-    # return(1/(1+np.exp((V+A)/W)))
+def chargeN(V,A,W):
+    return (1/(1+np.exp((V-A)/W)))
 
-def E_act_fixedtemp_biasvoltage(V,E,l,cap,A,W):
-    Vg=cap*(1-1/(1+np.exp((V+A)/W)))
-    return E_act_fixedtemp_gatevoltage(Vg,E,l)
+def chargeP(V,A,W):
+    return(1-1/(1+np.exp((V-A)/W)))
+
+def E_act_fixedtemp_biasvoltageN(V,E,l,cap,A,W,T0,T1):
+    Vg=cap*chargeN(V,A,W)
+    return E_act_fixedtemp_gatevoltage(Vg,E,l,T0,T1)
+def E_act_fixedtemp_biasvoltageP(V,E,l,cap,A,W,T0,T1):
+    Vg=cap*chargeP(V,A,W)
+    return E_act_fixedtemp_gatevoltage(Vg,E,l,T0,T1)
