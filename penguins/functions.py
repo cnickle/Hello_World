@@ -278,7 +278,7 @@ def HysteresisModel_witht(vb, t, n, gammaL, gammaR, kappa, sigma, E_AB, E_AC, ch
             delArray += [dPdt]
             P = P+dPdt*delt
         
-        return I
+        return I,Parray
 
 def HysteresisModel(vb, n, gammaL, gammaR, kappa, sigma, E_AB, E_AC, chi, eta,
                   gam, lam, P, u, c, vg, T):
